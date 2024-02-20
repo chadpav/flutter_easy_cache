@@ -4,10 +4,14 @@ Works with iOS, Android.
 
 ## Features
 
-- Simple API
+- Easy-to-use, clean API
 - In-memory cache scoped to the current app session
 - Disk cache scoped to the current app installation (using `shared_preferences` package)
-- Secure storage cache scoped to the live across app installations (using `flutter_secure_storage` package)
+- Secure storage cache scoped to live across app installations (using `flutter_secure_storage` package)
+- Supports caching of these data types: 
+    - Primitives `String`,`int`, `double`, `bool`,
+    - Plus `List<String>`, `Map<String, dynamic>`, `List<Map<String, dynamic>>`
+    - NOTE: I write `toDictionary` and `fromDictionary` methods for all my models, so I can easily convert them to and from `Map<String, dynamic>` objects. This is a good practice to follow, and it makes it easy to cache your models.
 
 ## Getting started
 
@@ -59,4 +63,4 @@ I've been dragging this package around for a while, and I've been using it in my
 
 My goal was to create a simple API that would allow me to cache data in memory, on disk, or encrypted in secure storage that ensures the same API and behavior across all storage types. It wraps the `shared_preferences` and `flutter_secure_storage` packages to provide a simple and consistent API. This is meant as a consolidation of the two packages, and unifying their API, not a replacement. I've intentionally left out some of the more advanced features of these packages to keep the API simple and consistent.
 
-I make not guarantees about the performance of this package. If you are dealing with large amounts of data you should be looking into a proper data store like SQLite or Hive or ISAR.
+I make no guarantees about the performance of this package. In fact, don't use this if you have large datasets. You should be looking into a proper data store like SQLite or Hive or ISAR. But then... those are more complicated storage API's.
