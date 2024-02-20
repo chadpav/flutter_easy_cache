@@ -121,10 +121,29 @@ void main() {
 
     await cache.addOrUpdate(key: 'aKey', value: value);
 
-    await cache.purgeAll();
+    await cache.purge();
 
     final retrievedValue = await cache.getValueOrNull<bool>(key: 'aKey');
     expect(retrievedValue, null);
+  });
+
+  test('Purging only the in-memory cache', () async {
+    const value = true;
+
+    await cache.addOrUpdate(key: 'aSessionKey', value: value, policy: CachePolicy.appSession);
+    await cache.addOrUpdate(key: 'appInstallKey', value: value, policy: CachePolicy.appInstall);
+    await cache.addOrUpdate(key: 'secureKey', value: value, policy: CachePolicy.secure);
+
+    await cache.purge(includeAppInstall: false, includeSecureStorage: false);
+
+    final retrievedValue = await cache.getValueOrNull<bool>(key: 'aSessionKey');
+    expect(retrievedValue, null);
+
+    final retrievedAppInstallValue = await cache.getValueOrNull<bool>(key: 'appInstallKey');
+    expect(retrievedAppInstallValue, value);
+
+    final retrievedSecureValue = await cache.getValueOrNull<bool>(key: 'secureKey');
+    expect(retrievedSecureValue, value);
   });
 
   test('Providing a Type for T that doesnt match actual type will throw', () async {
@@ -145,6 +164,13 @@ void main() {
       () async => await cache.addOrUpdate<List<int>>(key: 'aKey', value: value),
       throwsA(isA<TypeError>()),
     );
+  });
+
+  test('Get a default value if the key does not exist', () async {
+    // sut
+    final retrievedValue = await cache.getValueOrDefault<bool>(key: 'aKeyThatDontExist', defaultIfNull: false);
+
+    expect(retrievedValue, false);
   });
 
   group('AppSession Policy Tests', () {

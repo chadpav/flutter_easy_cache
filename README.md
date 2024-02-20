@@ -37,10 +37,19 @@ void main() {
     
     // Read from the cache
     final cachedValue = await cache.getValueOrNull<String>(key: 'aKey'); 
-    final cachedDictValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aDictKey'); 
+    final cachedDictValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aDictKey');
+
+    // or Get a value from the cache, or a default value if it doesn't exist
+    final cachedValueOrDefault = await cache.getValueOrDefault<String>(key: 'aNewKey', defaultValue: 'default value');
     
     print(cachedValue); // 'a string value'
     print(cachedDictValue); // {'name': 'Chad'}
+
+    // Remove a value from the cache
+    await cache.removeValue(key: 'aKey');
+    
+    // Or all values from the cache
+    await cache.purge(); // Remove all values from the cache
 }
 ```
 

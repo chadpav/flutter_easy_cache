@@ -242,33 +242,28 @@ class FlutterEasyCache {
 
   /// Clear everything from cache
   /// TIP: Don't forget to AWAIT!
-  Future<void> purgeAll() async {
+  Future<void> purge(
+      {bool includeAppSession = true, bool includeAppInstall = true, bool includeSecureStorage = true}) async {
     await _initIfNeeded();
-    await purgeAppSession();
-    await purgeAppInstall();
-    await purgeSecureStorage();
+    if (includeAppSession) _purgeAppSession();
+    if (includeAppInstall) await _purgeAppInstall();
+    if (includeSecureStorage) await _purgeSecureStorage();
   }
 
   /// Clear everything from cache with the AppSession policy
-  /// TIP: Don't forget to AWAIT!
-  Future<void> purgeAppSession() async {
-    await _initIfNeeded();
+  Future<void> _purgeAppSession() async {
     inMemoryCache.clear();
     _consolePrint('FlexCache app session cache was purged');
   }
 
   /// Clear everything from cache with the AppInstall policy
-  /// TIP: Don't forget to AWAIT!
-  Future<void> purgeAppInstall() async {
-    await _initIfNeeded();
+  Future<void> _purgeAppInstall() async {
     await preferences?.clear();
     _consolePrint('FlexCache app install cache was purged');
   }
 
   /// Clear everything from cache with the Secure policy
-  /// TIP: Don't forget to AWAIT!
-  Future<void> purgeSecureStorage() async {
-    await _initIfNeeded();
+  Future<void> _purgeSecureStorage() async {
     await secureStorage?.deleteAll();
     _consolePrint('FlexCache secure storage cache was purged');
   }
