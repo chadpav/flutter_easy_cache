@@ -57,6 +57,11 @@ void main() {
 }
 ```
 
+## What's coming
+
+1. Adding support for TTL (time-to-live) on cached values. For example, you could make something work across app sessions but expire after 1 week.
+2. Catch all exceptions and return NULL instead of throwing errors. For a simple caching layer, it's better to fail silently and pretend that a value wasn't cached than to throw errors and have to wrap everything in Try/Catches.
+
 ## Additional information
 
 I've been dragging this package around for a while, and I've been using it in my projects. I decided to publish it to help others who need a simple caching layer for their Flutter apps.
