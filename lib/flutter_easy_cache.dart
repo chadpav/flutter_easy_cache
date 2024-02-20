@@ -333,6 +333,18 @@ class FlutterEasyCache {
     }
   }
 
+  /// Initializes the shared preferences + Flutter secure storage packages with mock values for testing.
+  /// With this you can directly
+  ///
+  /// If the singleton instance has been initialized already, it is nullified.
+  @visibleForTesting
+  static void setMockInitialValues(Map<String, String> values) async {
+    // ignore: invalid_use_of_visible_for_testing_member
+    SharedPreferences.setMockInitialValues(values);
+    // ignore: invalid_use_of_visible_for_testing_member
+    FlutterSecureStorage.setMockInitialValues(values);
+  }
+
   void _consolePrint(String msg) {
     if (_loggingEnabled) debugPrint(msg);
   }

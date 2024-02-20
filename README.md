@@ -54,8 +54,31 @@ void main() {
     
     // Or all values from the cache
     await cache.purge(); // Remove all values from the cache
+
+    // Example of caching a model named Credentials into secure storage that has toDictionary and fromDictionary methods
+    final creds = Credentials(email: email, password: password);
+    await _cacheService.addOrUpdate(
+      key: CacheKey.credentials.name,
+      value: creds.toDictionary(),
+      policy: CachePolicy.secure,
+    );
 }
 ```
+
+In unit tests, you can pass mock values into the cache to test your code without having to mock the library out.
+  
+  ```dart
+  ...
+  setUp(() async {
+    // Set up the cache with mock values first
+    FlutterEasyCache.setMockInitialValues({});
+    // then get the Singleton instance
+    cache = FlutterEasyCache.shared;
+    // don't forget to purge the cache after each test
+    await cache.purge();
+  });
+  ...
+  ```
 
 ## What's coming
 
