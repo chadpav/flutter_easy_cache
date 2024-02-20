@@ -24,10 +24,23 @@ dependencies:
 import 'package:flutter_easy_cache/flutter_easy_cache.dart';
 
 void main() {
-  final cache = FlutterEasyCache();
-  cache.write('key', 'value');
-    final value = cache.read('key');
-    print(value);
+    // Singleton instance of the cache
+    final cache = FlutterEasyCache.shared;
+
+    final value = 'a string value';
+    final dictValue = {'name': 'Chad'};
+
+    // Add or update a value in the cache
+    // Optionally provide a generic type to ensure type safety
+    await cache.addOrUpdate<String>(key: 'aKey', value: value);
+    await cache.addOrUpdate<Map<String, dynamic>>(key: 'aDictKey', value: dictValue);
+    
+    // Read from the cache
+    final cachedValue = await cache.getValueOrNull<String>(key: 'aKey'); 
+    final cachedDictValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aDictKey'); 
+    
+    print(cachedValue); // 'a string value'
+    print(cachedDictValue); // {'name': 'Chad'}
 }
 ```
 
