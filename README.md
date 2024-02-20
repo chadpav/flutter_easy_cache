@@ -18,7 +18,7 @@ dependencies:
   flutter_easy_cache: ^0.0.1
 ```
 
-2. Use it in your code
+## Usage
 
 ```dart
 import 'package:flutter_easy_cache/flutter_easy_cache.dart';
@@ -52,10 +52,6 @@ void main() {
     await cache.purge(); // Remove all values from the cache
 }
 ```
-
-## Usage
-
-TODO: Include short and useful examples for package users. 
 
 ## Additional information
 

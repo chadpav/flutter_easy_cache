@@ -16,20 +16,28 @@ enum CachePolicy {
 /// Cache key/value pairs with the ability to set the cache policy for each key.
 /// Supports scoping lifecycle of cache to the app session, app installation, or even across app installs (via keychain)
 class FlutterEasyCache {
-  static final FlutterEasyCache shared = FlutterEasyCache.create();
+  static final FlutterEasyCache shared = FlutterEasyCache._internal();
 
-  Map<String, dynamic> inMemoryCache = {};
-  SharedPreferences? preferences;
-  FlutterSecureStorage? secureStorage;
-  bool enalbeLogging;
+  final Map<String, dynamic> _inMemoryCache = {};
+  SharedPreferences? _preferences;
+  FlutterSecureStorage? _secureStorage;
+  bool _loggingEnabled;
 
-  FlutterEasyCache({this.preferences, this.secureStorage, this.enalbeLogging = false});
+  /// enables console logging in debug builds only
+  set enableLogging(bool value) {
+    _loggingEnabled = value;
+  }
 
-  factory FlutterEasyCache.create() {
-    return FlutterEasyCache(
-      preferences: null,
-      secureStorage: null,
-    );
+  FlutterEasyCache._internal(
+      {SharedPreferences? preferences, FlutterSecureStorage? secureStorage, bool loggingEnabled = false})
+      : _loggingEnabled = loggingEnabled,
+        _secureStorage = secureStorage,
+        _preferences = preferences;
+
+  factory FlutterEasyCache.create(SharedPreferences preferences, FlutterSecureStorage secureStorage,
+      {bool enalbeLogging = false}) {
+    return FlutterEasyCache._internal(
+        preferences: preferences, secureStorage: secureStorage, loggingEnabled: enalbeLogging);
   }
 
   /// Add a value to cache, replacing any existing value
@@ -53,55 +61,55 @@ class FlutterEasyCache {
   }
 
   Future<void> _addOrUpdateAppSession<T>({required String key, required T value}) async {
-    inMemoryCache[key] = value;
-    _consolePrint('FlexCache addOrUpdate $key=$value with AppSession Policy');
+    _inMemoryCache[key] = value;
+    _consolePrint('EasyCache addOrUpdate $key=$value with AppSession Policy');
   }
 
   Future<void> _addOrUpdateAppInstall<T>({required String key, required T value}) async {
     await _initIfNeeded();
 
     if (value is String) {
-      await preferences!.setString(key, value);
+      await _preferences!.setString(key, value);
     } else if (value is bool) {
-      await preferences!.setBool(key, value);
+      await _preferences!.setBool(key, value);
     } else if (value is int) {
-      await preferences!.setInt(key, value);
+      await _preferences!.setInt(key, value);
     } else if (value is double) {
-      await preferences!.setDouble(key, value);
+      await _preferences!.setDouble(key, value);
     } else if (value is Map<String, dynamic>) {
       String jsonString = jsonEncode(value);
-      await preferences!.setString(key, jsonString);
+      await _preferences!.setString(key, jsonString);
     } else if (value is List<String>) {
-      await preferences!.setStringList(key, value);
+      await _preferences!.setStringList(key, value);
     } else if (value is List<Map<String, dynamic>>) {
       final jsonStringList = value.map((e) => jsonEncode(e)).toList(growable: false);
-      await preferences!.setStringList(key, jsonStringList);
+      await _preferences!.setStringList(key, jsonStringList);
     }
-    _consolePrint('FlexCache addOrUpdate $key=$value with AppInstall Policy');
+    _consolePrint('EasyCache addOrUpdate $key=$value with AppInstall Policy');
   }
 
   Future<void> _addOrUpdateSecureStorage<T>({required String key, required T value}) async {
     await _initIfNeeded();
 
     if (value is String) {
-      await secureStorage?.write(key: key, value: value);
+      await _secureStorage?.write(key: key, value: value);
     } else if (value is bool) {
-      await secureStorage?.write(key: key, value: value.toString());
+      await _secureStorage?.write(key: key, value: value.toString());
     } else if (value is int) {
-      await secureStorage?.write(key: key, value: value.toString());
+      await _secureStorage?.write(key: key, value: value.toString());
     } else if (value is double) {
-      await secureStorage?.write(key: key, value: value.toString());
+      await _secureStorage?.write(key: key, value: value.toString());
     } else if (value is Map<String, dynamic>) {
       String jsonString = jsonEncode(value);
-      await secureStorage?.write(key: key, value: jsonString);
+      await _secureStorage?.write(key: key, value: jsonString);
     } else if (value is List<String>) {
       String jsonString = jsonEncode(value);
-      await secureStorage?.write(key: key, value: jsonString);
+      await _secureStorage?.write(key: key, value: jsonString);
     } else if (value is List<Map<String, dynamic>>) {
       String jsonString = jsonEncode(value);
-      await secureStorage?.write(key: key, value: jsonString);
+      await _secureStorage?.write(key: key, value: jsonString);
     }
-    _consolePrint('FlexCache addOrUpdate $key=$value with Secure Policy');
+    _consolePrint('EasyCache addOrUpdate $key=$value with Secure Policy');
   }
 
   /// Remove a value from cache
@@ -109,9 +117,9 @@ class FlutterEasyCache {
   /// TIP: Don't forget to AWAIT!
   Future<void> remove({required String key}) async {
     await _initIfNeeded();
-    inMemoryCache.remove(key);
-    await secureStorage?.delete(key: key);
-    await preferences?.remove(key);
+    _inMemoryCache.remove(key);
+    await _secureStorage?.delete(key: key);
+    await _preferences?.remove(key);
   }
 
   /// Get a value from cache, or a default value if the key does not exist
@@ -137,7 +145,7 @@ class FlutterEasyCache {
     value ??= await _getSecureValue<T>(key: key);
 
     if (value == null) {
-      _consolePrint('FlexCache Miss for $key');
+      _consolePrint('EasyCache Miss for $key');
     }
 
     return (value is T) ? value : null;
@@ -146,12 +154,12 @@ class FlutterEasyCache {
   Future<T?> _getInMemoryValue<T>({required String key}) async {
     T? value;
 
-    if (inMemoryCache.containsKey(key)) {
-      value = inMemoryCache[key] as T?;
+    if (_inMemoryCache.containsKey(key)) {
+      value = _inMemoryCache[key] as T?;
     }
 
     if (value != null) {
-      _consolePrint('FlexCache Hit (in-memory) for $key');
+      _consolePrint('EasyCache Hit (in-memory) for $key');
     }
 
     return value;
@@ -162,35 +170,35 @@ class FlutterEasyCache {
 
     T? value;
 
-    if (preferences?.containsKey(key) == true) {
+    if (_preferences?.containsKey(key) == true) {
       try {
         if (T == String) {
-          value = preferences?.getString(key) as T?;
+          value = _preferences?.getString(key) as T?;
         } else if (T == int) {
-          value = preferences?.getInt(key) as T?;
+          value = _preferences?.getInt(key) as T?;
         } else if (T == bool) {
-          value = preferences?.getBool(key) as T?;
+          value = _preferences?.getBool(key) as T?;
         } else if (T == double) {
-          value = preferences?.getDouble(key) as T?;
+          value = _preferences?.getDouble(key) as T?;
         } else if (T == Map<String, dynamic>) {
-          final jsonString = preferences?.getString(key);
+          final jsonString = _preferences?.getString(key);
           value = jsonString != null ? jsonDecode(jsonString) as T? : null;
         } else if (T == List<String>) {
-          value = preferences?.getStringList(key) as T?;
+          value = _preferences?.getStringList(key) as T?;
         } else if (T == List<Map<String, dynamic>>) {
-          final stringList = preferences?.getStringList(key) as List<String>;
+          final stringList = _preferences?.getStringList(key) as List<String>;
           value = stringList.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() as T?;
         } else {
-          throw Exception('FlexCache - Unsupported type');
+          throw Exception('EasyCache - Unsupported type');
         }
       } catch (e) {
-        _consolePrint('WARN: FlexCache error getting $key: "$e"');
+        _consolePrint('WARN: EasyCache error getting $key: "$e"');
         rethrow;
       }
     }
 
     if (value != null) {
-      _consolePrint('FlexCache Hit (preferences) for $key');
+      _consolePrint('EasyCache Hit (preferences) for $key');
     }
 
     return value;
@@ -200,41 +208,41 @@ class FlutterEasyCache {
     await _initIfNeeded();
     T? value;
 
-    if (await secureStorage?.containsKey(key: key) == true) {
+    if (await _secureStorage?.containsKey(key: key) == true) {
       try {
         if (T == String) {
-          value = await secureStorage?.read(key: key) as T?;
+          value = await _secureStorage?.read(key: key) as T?;
         } else if (T == bool) {
-          final stringValue = await secureStorage?.read(key: key);
+          final stringValue = await _secureStorage?.read(key: key);
           value = bool.tryParse(stringValue ?? '', caseSensitive: false) as T?;
         } else if (T == int) {
-          final stringValue = await secureStorage?.read(key: key);
+          final stringValue = await _secureStorage?.read(key: key);
           value = int.tryParse(stringValue ?? '') as T?;
         } else if (T == double) {
-          final stringValue = await secureStorage?.read(key: key);
+          final stringValue = await _secureStorage?.read(key: key);
           value = double.tryParse(stringValue ?? '') as T?;
         } else if (T == Map<String, dynamic>) {
-          final jsonString = await secureStorage?.read(key: key);
+          final jsonString = await _secureStorage?.read(key: key);
           value = jsonString != null ? jsonDecode(jsonString) as T? : null;
         } else if (T == List<String>) {
-          final jsonString = await secureStorage?.read(key: key);
+          final jsonString = await _secureStorage?.read(key: key);
           final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
           value = list?.cast<String>() as T?;
         } else if (T == List<Map<String, dynamic>>) {
-          final jsonString = await secureStorage?.read(key: key);
+          final jsonString = await _secureStorage?.read(key: key);
           final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
           value = list?.cast<Map<String, dynamic>>() as T?;
         } else {
-          throw Exception('FlexCache - Unsupported type');
+          throw Exception('EasyCache - Unsupported type');
         }
       } catch (e) {
-        _consolePrint('WARN: FlexCache error getting $key: "$e"');
+        _consolePrint('WARN: EasyCache error getting $key: "$e"');
         rethrow;
       }
     }
 
     if (value != null) {
-      _consolePrint('FlexCache Hit (secure storage) for $key');
+      _consolePrint('EasyCache Hit (secure storage) for $key');
     }
 
     return value;
@@ -252,20 +260,20 @@ class FlutterEasyCache {
 
   /// Clear everything from cache with the AppSession policy
   Future<void> _purgeAppSession() async {
-    inMemoryCache.clear();
-    _consolePrint('FlexCache app session cache was purged');
+    _inMemoryCache.clear();
+    _consolePrint('EasyCache app session cache was purged');
   }
 
   /// Clear everything from cache with the AppInstall policy
   Future<void> _purgeAppInstall() async {
-    await preferences?.clear();
-    _consolePrint('FlexCache app install cache was purged');
+    await _preferences?.clear();
+    _consolePrint('EasyCache app install cache was purged');
   }
 
   /// Clear everything from cache with the Secure policy
   Future<void> _purgeSecureStorage() async {
-    await secureStorage?.deleteAll();
-    _consolePrint('FlexCache secure storage cache was purged');
+    await _secureStorage?.deleteAll();
+    _consolePrint('EasyCache secure storage cache was purged');
   }
 
   // PRIVATE METHODS
@@ -273,10 +281,10 @@ class FlutterEasyCache {
   /// lazily init dependencies because we can't use async in the constructor
   Future<void> _initIfNeeded() async {
     // init shared preferences which returns a Future
-    preferences ??= await SharedPreferences.getInstance();
+    _preferences ??= await SharedPreferences.getInstance();
 
     // init secure storage
-    if (secureStorage == null) {
+    if (_secureStorage == null) {
       const aOptions = AndroidOptions(
         encryptedSharedPreferences: true,
       );
@@ -284,7 +292,7 @@ class FlutterEasyCache {
         accessibility: KeychainAccessibility.unlocked,
         synchronizable: true, // will sync across iCloud to other devices
       );
-      secureStorage = const FlutterSecureStorage(
+      _secureStorage = const FlutterSecureStorage(
         aOptions: aOptions,
         iOptions: iOptions,
       );
@@ -294,7 +302,7 @@ class FlutterEasyCache {
   void _assertTypeSupport<T>(dynamic value) {
     // 1 - check if a type was provided for T
     if (T == dynamic) {
-      throw ArgumentError('FlexCache: Specify a type for T');
+      throw ArgumentError('EasyCache: Specify a type for T');
     }
 
     bool isSupported = false;
@@ -313,19 +321,19 @@ class FlutterEasyCache {
     // 3 - if isSupported is false, check if the type is a primitive, else throw
     if (T != String && T != int && T != bool && T != double && !isSupported) {
       throw ArgumentError(
-          'FlexCache - Unsupported type $T. Only primitives, List<String>, Map<String, dynamic>, and List<Map<String, dynamic>> are supported.');
+          'EasyCache - Unsupported type $T. Only primitives, List<String>, Map<String, dynamic>, and List<Map<String, dynamic>> are supported.');
     }
 
     // 4 - if value is not null, check if the type will cast to type T
     if (value != null) {
       final castValue = value as T?;
       if (castValue == null) {
-        throw Exception('FlexCache - Type mismatch. ${value.runtimeType} is not a $T');
+        throw Exception('EasyCache - Type mismatch. ${value.runtimeType} is not a $T');
       }
     }
   }
 
   void _consolePrint(String msg) {
-    if (enalbeLogging) debugPrint(msg);
+    if (_loggingEnabled) debugPrint(msg);
   }
 }

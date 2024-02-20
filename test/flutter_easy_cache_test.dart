@@ -22,7 +22,7 @@ void main() {
     sharedPreferences = await SharedPreferences.getInstance();
 
     // sut
-    cache = FlutterEasyCache(preferences: sharedPreferences, secureStorage: secureStorage, enalbeLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences, secureStorage, enalbeLogging: false);
   });
 
   test('Get a key that does not exist returns null value', () async {
@@ -30,20 +30,20 @@ void main() {
     expect(retrievedValue, null);
   });
 
-  test('Creating a FlexCache using shared returns a singleton', () async {
+  test('Creating an EasyCache using shared returns a singleton', () async {
     FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
 
-    // create one flexCache and store a value
-    final flexCacheOne = FlutterEasyCache.shared;
-    await flexCacheOne.addOrUpdate<bool>(key: 'keyOne', value: true, policy: CachePolicy.appSession);
+    // create one cache and store a value
+    final cacheOne = FlutterEasyCache.shared;
+    await cacheOne.addOrUpdate<bool>(key: 'keyOne', value: true, policy: CachePolicy.appSession);
 
-    // create another flexCache and retrieve the value
-    final flexCacheTwo = FlutterEasyCache.shared;
-    expect(flexCacheOne, flexCacheTwo);
+    // create another cache and retrieve the value
+    final cacheTwo = FlutterEasyCache.shared;
+    expect(cacheOne, cacheTwo);
 
-    // sut
-    final retrievedValue = await flexCacheTwo.getValueOrNull<bool>(key: 'keyOne');
+    // sut, ensure this is the same instance and returns the value
+    final retrievedValue = await cacheTwo.getValueOrNull<bool>(key: 'keyOne');
     expect(retrievedValue, true);
   });
 
