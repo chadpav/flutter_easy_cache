@@ -53,12 +53,13 @@ void main() {
     await cache.removeValue(key: 'aKey');
     
     // Or all values from the cache
-    await cache.purge(); // Remove all values from the cache
+    await cache.purge();
 
-    // Example of caching a model named Credentials into secure storage that has toDictionary and fromDictionary methods
-    final creds = Credentials(email: email, password: password);
+    // Example of caching a model named Credentials into secure storage that has toDictionary() and fromDictionary() methods
+    final creds = Credentials(email: 'email', password: 'password');
+    // this will store the value encrypted and protected by the device's security (biometrics, etc.)
     await _cacheService.addOrUpdate(
-      key: CacheKey.credentials.name,
+      key: 'CredentialsKey',
       value: creds.toDictionary(),
       policy: CachePolicy.secure,
     );
@@ -69,12 +70,17 @@ In unit tests, you can pass mock values into the cache to test your code without
   
   ```dart
   ...
+  late FlutterEasyCache cache;
+
   setUp(() async {
     // Set up the cache with mock values first
     FlutterEasyCache.setMockInitialValues({});
     // then get the Singleton instance
     cache = FlutterEasyCache.shared;
-    // don't forget to purge the cache after each test
+  });
+
+  tearDown(() async {
+    // Clean up the cache after each test
     await cache.purge();
   });
   ...
