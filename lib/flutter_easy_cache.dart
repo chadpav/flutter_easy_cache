@@ -154,8 +154,12 @@ class FlutterEasyCache {
   Future<T?> _getInMemoryValue<T>({required String key}) async {
     T? value;
 
-    if (_inMemoryCache.containsKey(key)) {
+    try {
       value = _inMemoryCache[key] as T?;
+    } catch (e) {
+      _consolePrint('WARN: EasyCache error getting "$key": "$e"');
+      _consolePrint('WARN: EasyCache will return null for "$key"');
+      // fall through to always return null value
     }
 
     if (value != null) {
@@ -170,32 +174,30 @@ class FlutterEasyCache {
 
     T? value;
 
-    if (_preferences?.containsKey(key) == true) {
-      try {
-        if (T == String) {
-          value = _preferences?.getString(key) as T?;
-        } else if (T == int) {
-          value = _preferences?.getInt(key) as T?;
-        } else if (T == bool) {
-          value = _preferences?.getBool(key) as T?;
-        } else if (T == double) {
-          value = _preferences?.getDouble(key) as T?;
-        } else if (T == Map<String, dynamic>) {
-          final jsonString = _preferences?.getString(key);
-          value = jsonString != null ? jsonDecode(jsonString) as T? : null;
-        } else if (T == List<String>) {
-          value = _preferences?.getStringList(key) as T?;
-        } else if (T == List<Map<String, dynamic>>) {
-          final stringList = _preferences?.getStringList(key) as List<String>;
-          value = stringList.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() as T?;
-        } else {
-          throw Exception('EasyCache - Unsupported type');
-        }
-      } catch (e) {
-        _consolePrint('WARN: EasyCache error getting "$key": "$e"');
-        rethrow;
+    try {
+      if (T == String) {
+        value = _preferences?.getString(key) as T?;
+      } else if (T == int) {
+        value = _preferences?.getInt(key) as T?;
+      } else if (T == bool) {
+        value = _preferences?.getBool(key) as T?;
+      } else if (T == double) {
+        value = _preferences?.getDouble(key) as T?;
+      } else if (T == Map<String, dynamic>) {
+        final jsonString = _preferences?.getString(key);
+        value = jsonString != null ? jsonDecode(jsonString) as T? : null;
+      } else if (T == List<String>) {
+        value = _preferences?.getStringList(key) as T?;
+      } else if (T == List<Map<String, dynamic>>) {
+        final stringList = _preferences?.getStringList(key) as List<String>;
+        value = stringList.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() as T?;
       }
+    } catch (e) {
+      _consolePrint('WARN: EasyCache error getting "$key": "$e"');
+      _consolePrint('WARN: EasyCache will return null for "$key"');
     }
+
+    // fall through to always return null value
 
     if (value != null) {
       _consolePrint('EasyCache Hit (preferences) for "$key"');
@@ -208,38 +210,36 @@ class FlutterEasyCache {
     await _initIfNeeded();
     T? value;
 
-    if (await _secureStorage?.containsKey(key: key) == true) {
-      try {
-        if (T == String) {
-          value = await _secureStorage?.read(key: key) as T?;
-        } else if (T == bool) {
-          final stringValue = await _secureStorage?.read(key: key);
-          value = bool.tryParse(stringValue ?? '', caseSensitive: false) as T?;
-        } else if (T == int) {
-          final stringValue = await _secureStorage?.read(key: key);
-          value = int.tryParse(stringValue ?? '') as T?;
-        } else if (T == double) {
-          final stringValue = await _secureStorage?.read(key: key);
-          value = double.tryParse(stringValue ?? '') as T?;
-        } else if (T == Map<String, dynamic>) {
-          final jsonString = await _secureStorage?.read(key: key);
-          value = jsonString != null ? jsonDecode(jsonString) as T? : null;
-        } else if (T == List<String>) {
-          final jsonString = await _secureStorage?.read(key: key);
-          final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
-          value = list?.cast<String>() as T?;
-        } else if (T == List<Map<String, dynamic>>) {
-          final jsonString = await _secureStorage?.read(key: key);
-          final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
-          value = list?.cast<Map<String, dynamic>>() as T?;
-        } else {
-          throw Exception('EasyCache - Unsupported type');
-        }
-      } catch (e) {
-        _consolePrint('WARN: EasyCache error getting "$key": "$e"');
-        rethrow;
+    try {
+      if (T == String) {
+        value = await _secureStorage?.read(key: key) as T?;
+      } else if (T == bool) {
+        final stringValue = await _secureStorage?.read(key: key);
+        value = bool.tryParse(stringValue ?? '', caseSensitive: false) as T?;
+      } else if (T == int) {
+        final stringValue = await _secureStorage?.read(key: key);
+        value = int.parse(stringValue ?? '') as T?;
+      } else if (T == double) {
+        final stringValue = await _secureStorage?.read(key: key);
+        value = double.tryParse(stringValue ?? '') as T?;
+      } else if (T == Map<String, dynamic>) {
+        final jsonString = await _secureStorage?.read(key: key);
+        value = jsonString != null ? jsonDecode(jsonString) as T? : null;
+      } else if (T == List<String>) {
+        final jsonString = await _secureStorage?.read(key: key);
+        final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
+        value = list?.cast<String>() as T?;
+      } else if (T == List<Map<String, dynamic>>) {
+        final jsonString = await _secureStorage?.read(key: key);
+        final list = jsonString != null ? jsonDecode(jsonString) as List<dynamic> : null;
+        value = list?.cast<Map<String, dynamic>>() as T?;
       }
+    } catch (e) {
+      _consolePrint('WARN: EasyCache error getting "$key": "$e"');
+      _consolePrint('WARN: EasyCache will return null for "$key"');
     }
+
+    // fall through to always return null value
 
     if (value != null) {
       _consolePrint('EasyCache Hit (secure storage) for "$key"');
