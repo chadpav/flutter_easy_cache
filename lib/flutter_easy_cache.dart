@@ -351,8 +351,10 @@ class FlutterEasyCache {
   static Future<void> resetStatic() async {
     // ignore: invalid_use_of_visible_for_testing_member
     SharedPreferences.resetStatic();
-    final cache = FlutterEasyCache.shared;
-    await cache.purge();
+
+    shared.purge();
+    shared._preferences = null;
+    shared._secureStorage = null;
   }
 
   void _consolePrint(String msg) {

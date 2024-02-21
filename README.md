@@ -72,7 +72,7 @@ In unit tests, you can pass mock values into the cache to test your code without
   ...
   late FlutterEasyCache cache;
 
-  setUp(() async {
+  setUp(() {
     // Set up the cache with mock values first
     FlutterEasyCache.setMockInitialValues({});
     // then get the Singleton instance

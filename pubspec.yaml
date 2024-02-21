@@ -1,6 +1,6 @@
 name: flutter_easy_cache
 description: "A don't overthink it, easy-to-use caching layer for Flutter."
-version: 0.0.1
+version: 0.0.2
 homepage:
 
 environment:
