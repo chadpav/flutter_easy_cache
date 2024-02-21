@@ -15,32 +15,26 @@ void main() {
   FlutterSecureStorage? secureStorage;
 
   setUp(() async {
-    if (secureStorage == null) {
-      FlutterSecureStorage.setMockInitialValues({});
-      secureStorage = const FlutterSecureStorage();
-    }
-
-    if (sharedPreferences == null) {
-      SharedPreferences.setMockInitialValues({});
-      sharedPreferences = await SharedPreferences.getInstance();
-    }
+    FlutterEasyCache.setMockInitialValues();
+    secureStorage ??= const FlutterSecureStorage();
+    sharedPreferences ??= await SharedPreferences.getInstance();
 
     // sut
     cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
   });
 
   tearDown(() async {
-    await sharedPreferences?.clear();
-    await secureStorage?.deleteAll();
+    await FlutterEasyCache.resetStatic();
   });
 
   group('AppInstall Policy Tests', () {
     test('Add then Get String values', () async {
+      String key = 'aKey';
       String value = 'aString';
-      await cache.addOrUpdate(key: 'aKey', value: value, policy: CachePolicy.appInstall);
+      await cache.addOrUpdate(key: key, value: value, policy: CachePolicy.appInstall);
 
       // sut
-      final retrievedValue = await cache.getValueOrNull<String>(key: 'aKey');
+      final retrievedValue = await cache.getValueOrNull<String>(key: key);
 
       expect(retrievedValue, value);
     });

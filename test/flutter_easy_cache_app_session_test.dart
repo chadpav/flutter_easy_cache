@@ -15,23 +15,16 @@ void main() {
   FlutterSecureStorage? secureStorage;
 
   setUp(() async {
-    if (secureStorage == null) {
-      FlutterSecureStorage.setMockInitialValues({});
-      secureStorage = const FlutterSecureStorage();
-    }
-
-    if (sharedPreferences == null) {
-      SharedPreferences.setMockInitialValues({});
-      sharedPreferences = await SharedPreferences.getInstance();
-    }
+    FlutterEasyCache.setMockInitialValues();
+    secureStorage ??= const FlutterSecureStorage();
+    sharedPreferences ??= await SharedPreferences.getInstance();
 
     // sut
     cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
   });
 
   tearDown(() async {
-    await sharedPreferences?.clear();
-    await secureStorage?.deleteAll();
+    await FlutterEasyCache.resetStatic();
   });
 
   group('AppSession Policy Tests', () {
