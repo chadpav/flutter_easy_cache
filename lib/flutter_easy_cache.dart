@@ -280,11 +280,8 @@ class FlutterEasyCache {
 
   /// lazily init dependencies because we can't use async in the constructor
   Future<void> _initIfNeeded() async {
-    // init shared preferences with 'easy_cache.' as the key prefix
-    if (_preferences == null) {
-      SharedPreferences.setPrefix('easy_cache');
-      _preferences = await SharedPreferences.getInstance();
-    }
+    // init shared preferences
+    _preferences ??= await SharedPreferences.getInstance();
 
     // init secure storage
     if (_secureStorage == null) {
