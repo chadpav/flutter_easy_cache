@@ -62,7 +62,7 @@ class FlutterEasyCache {
 
   Future<void> _addOrUpdateAppSession<T>({required String key, required T value}) async {
     _inMemoryCache[key] = value;
-    _consolePrint('EasyCache addOrUpdate $key=$value with AppSession Policy');
+    _consolePrint('EasyCache addOrUpdate $key with AppSession Policy');
   }
 
   Future<void> _addOrUpdateAppInstall<T>({required String key, required T value}) async {
@@ -85,7 +85,7 @@ class FlutterEasyCache {
       final jsonStringList = value.map((e) => jsonEncode(e)).toList(growable: false);
       await _preferences!.setStringList(key, jsonStringList);
     }
-    _consolePrint('EasyCache addOrUpdate $key=$value with AppInstall Policy');
+    _consolePrint('EasyCache addOrUpdate "$key" with AppInstall Policy');
   }
 
   Future<void> _addOrUpdateSecureStorage<T>({required String key, required T value}) async {
@@ -109,7 +109,7 @@ class FlutterEasyCache {
       String jsonString = jsonEncode(value);
       await _secureStorage?.write(key: key, value: jsonString);
     }
-    _consolePrint('EasyCache addOrUpdate $key=$value with Secure Policy');
+    _consolePrint('EasyCache addOrUpdate "$key" with Secure Policy');
   }
 
   /// Remove a value from cache
@@ -145,7 +145,7 @@ class FlutterEasyCache {
     value ??= await _getSecureValue<T>(key: key);
 
     if (value == null) {
-      _consolePrint('EasyCache Miss for $key');
+      _consolePrint('EasyCache Miss for "$key"');
     }
 
     return (value is T) ? value : null;
@@ -159,7 +159,7 @@ class FlutterEasyCache {
     }
 
     if (value != null) {
-      _consolePrint('EasyCache Hit (in-memory) for $key');
+      _consolePrint('EasyCache Hit (in-memory) for "$key"');
     }
 
     return value;
@@ -192,13 +192,13 @@ class FlutterEasyCache {
           throw Exception('EasyCache - Unsupported type');
         }
       } catch (e) {
-        _consolePrint('WARN: EasyCache error getting $key: "$e"');
+        _consolePrint('WARN: EasyCache error getting "$key": "$e"');
         rethrow;
       }
     }
 
     if (value != null) {
-      _consolePrint('EasyCache Hit (preferences) for $key');
+      _consolePrint('EasyCache Hit (preferences) for "$key"');
     }
 
     return value;
@@ -236,13 +236,13 @@ class FlutterEasyCache {
           throw Exception('EasyCache - Unsupported type');
         }
       } catch (e) {
-        _consolePrint('WARN: EasyCache error getting $key: "$e"');
+        _consolePrint('WARN: EasyCache error getting "$key": "$e"');
         rethrow;
       }
     }
 
     if (value != null) {
-      _consolePrint('EasyCache Hit (secure storage) for $key');
+      _consolePrint('EasyCache Hit (secure storage) for "$key"');
     }
 
     return value;
@@ -280,8 +280,11 @@ class FlutterEasyCache {
 
   /// lazily init dependencies because we can't use async in the constructor
   Future<void> _initIfNeeded() async {
-    // init shared preferences which returns a Future
-    _preferences ??= await SharedPreferences.getInstance();
+    // init shared preferences with 'easy_cache.' as the key prefix
+    if (_preferences == null) {
+      SharedPreferences.setPrefix('easy_cache');
+      _preferences = await SharedPreferences.getInstance();
+    }
 
     // init secure storage
     if (_secureStorage == null) {

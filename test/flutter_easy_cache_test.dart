@@ -11,18 +11,28 @@ void main() {
   late FlutterEasyCache cache;
 
   // dependencies
-  late SharedPreferences sharedPreferences;
-  late FlutterSecureStorage secureStorage;
+  SharedPreferences? sharedPreferences;
+  FlutterSecureStorage? secureStorage;
 
   setUp(() async {
-    FlutterSecureStorage.setMockInitialValues({});
-    secureStorage = const FlutterSecureStorage();
+    if (secureStorage == null) {
+      FlutterSecureStorage.setMockInitialValues({});
+      secureStorage = const FlutterSecureStorage();
+    }
 
-    SharedPreferences.setMockInitialValues({});
-    sharedPreferences = await SharedPreferences.getInstance();
+    if (sharedPreferences == null) {
+      SharedPreferences.setPrefix('easy_cache');
+      SharedPreferences.setMockInitialValues({});
+      sharedPreferences = await SharedPreferences.getInstance();
+    }
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences, secureStorage, enalbeLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
+  });
+
+  tearDown(() async {
+    await sharedPreferences?.clear();
+    await secureStorage?.deleteAll();
   });
 
   test('Get a key that does not exist returns null value', () async {
@@ -440,8 +450,8 @@ void main() {
 
     test('Add then Get List<dictionary> values', () async {
       List<Map<String, dynamic>> value = [
-        {'key1': 'value1'},
-        {'key2': 'value2'},
+        {'key1': 'value1', 'keyInt': 1},
+        {'key2': 'value2', 'keyBool': true},
       ];
       await cache.addOrUpdate<List<Map<String, dynamic>>>(key: 'aKey', value: value, policy: CachePolicy.secure);
 
