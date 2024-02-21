@@ -80,8 +80,7 @@ In unit tests, you can pass mock values into the cache to test your code without
   });
 
   tearDown(() async {
-    // Clean up the cache after each test
-    await cache.purge();
+    await FlutterEasyCache.resetStatic();
   });
   ...
   ```
