@@ -6,6 +6,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// NOTE: these imports are required for testing SharePreferences (see InitializeMockValues)
+// ignore: depend_on_referenced_packages
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+// ignore: depend_on_referenced_packages
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+
 enum CachePolicy {
   appSession, // stores in-memory only
   appInstall, // stores on disk only
@@ -19,7 +25,7 @@ class FlutterEasyCache {
   static final FlutterEasyCache shared = FlutterEasyCache._internal();
 
   final Map<String, dynamic> _inMemoryCache = {};
-  SharedPreferences? _preferences;
+  SharedPreferencesWithCache? _preferences;
   FlutterSecureStorage? _secureStorage;
   bool _loggingEnabled;
 
@@ -29,12 +35,12 @@ class FlutterEasyCache {
   }
 
   FlutterEasyCache._internal(
-      {SharedPreferences? preferences, FlutterSecureStorage? secureStorage, bool loggingEnabled = false})
+      {SharedPreferencesWithCache? preferences, FlutterSecureStorage? secureStorage, bool loggingEnabled = false})
       : _loggingEnabled = loggingEnabled,
         _secureStorage = secureStorage,
         _preferences = preferences;
 
-  factory FlutterEasyCache.create(SharedPreferences preferences, FlutterSecureStorage secureStorage,
+  factory FlutterEasyCache.create(SharedPreferencesWithCache preferences, FlutterSecureStorage secureStorage,
       {bool enalbeLogging = false}) {
     return FlutterEasyCache._internal(
         preferences: preferences, secureStorage: secureStorage, loggingEnabled: enalbeLogging);
@@ -281,7 +287,7 @@ class FlutterEasyCache {
   /// lazily init dependencies because we can't use async in the constructor
   Future<void> _initIfNeeded() async {
     // init shared preferences
-    _preferences ??= await SharedPreferences.getInstance();
+    _preferences ??= await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
 
     // init secure storage
     if (_secureStorage == null) {
@@ -339,6 +345,8 @@ class FlutterEasyCache {
   /// If the singleton instance has been initialized already, it is nullified.
   @visibleForTesting
   static void setMockInitialValues() async {
+    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
+
     // ignore: invalid_use_of_visible_for_testing_member
     SharedPreferences.setMockInitialValues({});
 

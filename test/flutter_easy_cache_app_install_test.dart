@@ -11,13 +11,14 @@ void main() {
   late FlutterEasyCache cache;
 
   // dependencies
-  SharedPreferences? sharedPreferences;
+  SharedPreferencesWithCache? sharedPreferences;
   FlutterSecureStorage? secureStorage;
 
   setUp(() async {
     FlutterEasyCache.setMockInitialValues();
+    sharedPreferences ??=
+        await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
     secureStorage ??= const FlutterSecureStorage();
-    sharedPreferences ??= await SharedPreferences.getInstance();
 
     // sut
     cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
