@@ -21,7 +21,7 @@ void main() {
     secureStorage ??= const FlutterSecureStorage();
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: false);
   });
 
   tearDown(() async {

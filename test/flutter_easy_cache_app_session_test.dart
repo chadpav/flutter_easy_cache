@@ -21,7 +21,7 @@ void main() {
         await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: false);
   });
 
   tearDown(() async {

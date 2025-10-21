@@ -41,9 +41,9 @@ class FlutterEasyCache {
         _preferences = preferences;
 
   factory FlutterEasyCache.create(SharedPreferencesWithCache preferences, FlutterSecureStorage secureStorage,
-      {bool enalbeLogging = false}) {
+      {bool enableLogging = false}) {
     return FlutterEasyCache._internal(
-        preferences: preferences, secureStorage: secureStorage, loggingEnabled: enalbeLogging);
+        preferences: preferences, secureStorage: secureStorage, loggingEnabled: enableLogging);
   }
 
   /// Add a value to cache, replacing any existing value
@@ -57,11 +57,11 @@ class FlutterEasyCache {
 
     switch (policy) {
       case CachePolicy.appSession:
-        _addOrUpdateAppSession<T>(key: key, value: value);
+        await _addOrUpdateAppSession<T>(key: key, value: value);
       case CachePolicy.appInstall:
-        _addOrUpdateAppInstall<T>(key: key, value: value);
+        await _addOrUpdateAppInstall<T>(key: key, value: value);
       case CachePolicy.secure:
-        _addOrUpdateSecureStorage<T>(key: key, value: value);
+        await _addOrUpdateSecureStorage<T>(key: key, value: value);
         break;
     }
   }
@@ -195,8 +195,10 @@ class FlutterEasyCache {
       } else if (T == List<String>) {
         value = _preferences?.getStringList(key) as T?;
       } else if (T == List<Map<String, dynamic>>) {
-        final stringList = _preferences?.getStringList(key) as List<String>;
-        value = stringList.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() as T?;
+        final stringList = _preferences?.getStringList(key);
+        if (stringList != null) {
+          value = stringList.map((e) => jsonDecode(e) as Map<String, dynamic>).toList() as T?;
+        }
       }
     } catch (e) {
       _consolePrint('WARN: EasyCache error getting "$key": "$e"');
@@ -224,7 +226,7 @@ class FlutterEasyCache {
         value = bool.tryParse(stringValue ?? '', caseSensitive: false) as T?;
       } else if (T == int) {
         final stringValue = await _secureStorage?.read(key: key);
-        value = int.parse(stringValue ?? '') as T?;
+        value = int.tryParse(stringValue ?? '') as T?;
       } else if (T == double) {
         final stringValue = await _secureStorage?.read(key: key);
         value = double.tryParse(stringValue ?? '') as T?;

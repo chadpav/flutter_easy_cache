@@ -21,7 +21,7 @@ void main() {
         await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enalbeLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: false);
   });
 
   tearDown(() async {
@@ -175,6 +175,48 @@ void main() {
         () async => await cache.addOrUpdate<List<int>>(key: 'aKey', value: value),
         throwsA(isA<TypeError>()),
       );
+    });
+
+    // TDD: Test for Bug #1 - Missing await in addOrUpdate()
+    test('addOrUpdate completes only after value is written to storage', () async {
+      const value = 'test-value';
+
+      // Write to appInstall (requires async disk write)
+      await cache.addOrUpdate(key: 'testKey', value: value, policy: CachePolicy.appInstall);
+
+      // If await is missing in the switch statement, this might read before write completes
+      final retrievedValue = await cache.getValueOrNull<String>(key: 'testKey');
+
+      expect(retrievedValue, value, reason: 'Value should be available immediately after addOrUpdate completes');
+    });
+
+    // TDD: Test for Bug #2 - int.parse() throws instead of returning null
+    test('Reading non-existent int from secure storage returns null (not throw)', () async {
+      // This should NOT throw - should return null gracefully
+      expect(
+        () async => await cache.getValueOrNull<int>(key: 'nonExistentIntKey'),
+        returnsNormally,
+        reason: 'Should not throw when reading non-existent int from secure storage',
+      );
+
+      final value = await cache.getValueOrNull<int>(key: 'nonExistentIntKey');
+      expect(value, null);
+    });
+
+    // TDD: Test for Bug #3 - Null pointer in List<Map> deserialization
+    test('Reading non-existent List<Map> from preferences returns null (not throw)', () async {
+      // First write to appInstall to ensure preferences is initialized
+      await cache.addOrUpdate(key: 'dummyKey', value: 'dummy', policy: CachePolicy.appInstall);
+
+      // This should NOT throw - should return null gracefully
+      expect(
+        () async => await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'nonExistentListMapKey'),
+        returnsNormally,
+        reason: 'Should not throw when reading non-existent List<Map> from preferences',
+      );
+
+      final value = await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'nonExistentListMapKey');
+      expect(value, null);
     });
   });
 }
