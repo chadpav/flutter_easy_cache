@@ -286,6 +286,10 @@ class FlutterEasyCache {
 
   /// lazily init dependencies because we can't use async in the constructor
   Future<void> _initIfNeeded() async {
+    if (kIsWeb) {
+      SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
+    }
+
     // init shared preferences
     _preferences ??= await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
 
