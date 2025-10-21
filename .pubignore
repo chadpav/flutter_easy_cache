@@ -1,0 +1,6 @@
+# Exclude development files and folders from published package
+memory-bank/
+.claude/
+coverage/
+build/
+*.iml
