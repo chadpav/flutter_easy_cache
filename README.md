@@ -19,8 +19,10 @@ Works with iOS, Android.
 
 ```yaml
 dependencies:
-  flutter_easy_cache: ^0.1.0
+  flutter_easy_cache: ^0.2.0
 ```
+
+Requires Dart 3.9 / Flutter 3.35. Minimum platform versions: Android API 23 (Android 6.0), iOS 12, macOS 10.14.
 
 ## Usage
 
@@ -85,6 +87,14 @@ In unit tests, you can pass mock values into the cache to test your code without
   });
   ...
   ```
+
+## Upgrading to 0.2.0
+
+Version 0.2.0 upgrades `flutter_secure_storage` from 9.x to 10.x. Secure values written by earlier versions stay readable:
+
+- On Android, the plugin migrates values from the deprecated EncryptedSharedPreferences backend to its new AES-GCM cipher on first access. If migration fails, it keeps reading the old backend rather than discarding data.
+- On iOS, keychain items are stored with the same attributes as before, so nothing changes.
+- Minimum requirements rise to Dart 3.9 / Flutter 3.35, Android API 23, iOS 12, and macOS 10.14.
 
 ## Upgrading to 0.1.0
 
