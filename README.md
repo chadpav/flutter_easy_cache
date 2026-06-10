@@ -19,7 +19,7 @@ Works with iOS, Android.
 
 ```yaml
 dependencies:
-  flutter_easy_cache: ^0.0.1
+  flutter_easy_cache: ^0.1.0
 ```
 
 ## Usage
@@ -27,7 +27,7 @@ dependencies:
 ```dart
 import 'package:flutter_easy_cache/flutter_easy_cache.dart';
 
-void main() {
+Future<void> main() async {
     // Singleton instance of the cache
     final cache = FlutterEasyCache.shared;
 
@@ -44,21 +44,22 @@ void main() {
     final cachedDictValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aDictKey');
 
     // or Get a value from the cache, or a default value if it doesn't exist
-    final cachedValueOrDefault = await cache.getValueOrDefault<String>(key: 'aNewKey', defaultValue: 'default value');
+    final cachedValueOrDefault = await cache.getValueOrDefault<String>(key: 'aNewKey', defaultIfNull: 'default value');
     
     print(cachedValue); // 'a string value'
     print(cachedDictValue); // {'name': 'Chad'}
 
     // Remove a value from the cache
-    await cache.removeValue(key: 'aKey');
+    await cache.remove(key: 'aKey');
     
-    // Or all values from the cache
+    // Or all values from the cache (only keys this cache owns; the rest of your
+    // app's shared preferences and keychain entries are left alone)
     await cache.purge();
 
     // Example of caching a model named Credentials into secure storage that has toDictionary() and fromDictionary() methods
     final creds = Credentials(email: 'email', password: 'password');
     // this will store the value encrypted and protected by the device's security (biometrics, etc.)
-    await _cacheService.addOrUpdate(
+    await cache.addOrUpdate<Map<String, dynamic>>(
       key: 'CredentialsKey',
       value: creds.toDictionary(),
       policy: CachePolicy.secure,
@@ -74,7 +75,7 @@ In unit tests, you can pass mock values into the cache to test your code without
 
   setUp(() {
     // Set up the cache with mock values first
-    FlutterEasyCache.setMockInitialValues({});
+    FlutterEasyCache.setMockInitialValues();
     // then get the Singleton instance
     cache = FlutterEasyCache.shared;
   });
@@ -84,6 +85,13 @@ In unit tests, you can pass mock values into the cache to test your code without
   });
   ...
   ```
+
+## Upgrading to 0.1.0
+
+Version 0.1.0 changed the storage format: keys carry an `easyCache.` prefix, and secure storage values carry a type tag so reads can enforce type safety. Values written by earlier versions migrate automatically the first time they are read — no action needed. Two things to know:
+
+- A legacy value keeps the old lenient typing until its first read, which locks in the type it was read as.
+- `purge()` now deletes only keys this cache owns. Legacy values that were never read (and so never migrated) are not covered; `remove(key:)` clears them.
 
 ## What's coming
 

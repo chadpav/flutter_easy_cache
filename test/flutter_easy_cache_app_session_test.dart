@@ -17,11 +17,12 @@ void main() {
   setUp(() async {
     FlutterEasyCache.setMockInitialValues();
     secureStorage ??= const FlutterSecureStorage();
-    sharedPreferences ??=
-        await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
+    sharedPreferences ??= await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions());
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!,
+        enableLogging: false);
   });
 
   tearDown(() async {
@@ -78,7 +79,8 @@ void main() {
       await cache.addOrUpdate<Map<String, dynamic>>(key: 'aKey', value: value);
 
       // sut
-      final retrievedValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aKey');
+      final retrievedValue =
+          await cache.getValueOrNull<Map<String, dynamic>>(key: 'aKey');
 
       expect(retrievedValue, value);
     });
@@ -88,7 +90,8 @@ void main() {
       await cache.addOrUpdate<List<String>>(key: 'aKey', value: value);
 
       // sut
-      final retrievedValue = await cache.getValueOrNull<List<String>>(key: 'aKey');
+      final retrievedValue =
+          await cache.getValueOrNull<List<String>>(key: 'aKey');
 
       expect(retrievedValue, value);
     });
@@ -98,10 +101,12 @@ void main() {
         {'key1': 'value1'},
         {'key2': 'value2'},
       ];
-      await cache.addOrUpdate<List<Map<String, dynamic>>>(key: 'aKey', value: value);
+      await cache.addOrUpdate<List<Map<String, dynamic>>>(
+          key: 'aKey', value: value);
 
       // sut
-      final retrievedValue = await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'aKey');
+      final retrievedValue =
+          await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'aKey');
 
       expect(retrievedValue, value);
     });
@@ -120,8 +125,11 @@ void main() {
       expect(retrievedValue, updatedValue);
     });
 
-    test('Get value where underlying datatype does not match should just return null (not throw)', () async {
-      await cache.addOrUpdate(key: 'aKey', value: 'aString', policy: CachePolicy.appSession);
+    test(
+        'Get value where underlying datatype does not match should just return null (not throw)',
+        () async {
+      await cache.addOrUpdate(
+          key: 'aKey', value: 'aString', policy: CachePolicy.appSession);
 
       // sut
       final retrievedValue = await cache.getValueOrNull<int>(key: 'aKey');
@@ -129,11 +137,15 @@ void main() {
       expect(retrievedValue, null);
     });
 
-    test('Get value where underlying datatype does not match should just return default (not throw)', () async {
-      await cache.addOrUpdate(key: 'aKey', value: 'aString', policy: CachePolicy.appSession);
+    test(
+        'Get value where underlying datatype does not match should just return default (not throw)',
+        () async {
+      await cache.addOrUpdate(
+          key: 'aKey', value: 'aString', policy: CachePolicy.appSession);
 
       // sut
-      final retrievedValue = await cache.getValueOrDefault<int>(key: 'aKey', defaultIfNull: 0);
+      final retrievedValue =
+          await cache.getValueOrDefault<int>(key: 'aKey', defaultIfNull: 0);
 
       expect(retrievedValue, 0);
     });
