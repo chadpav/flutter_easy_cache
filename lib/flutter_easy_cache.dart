@@ -448,7 +448,13 @@ class FlutterEasyCache {
     // init secure storage
     if (_secureStorage == null) {
       const aOptions = AndroidOptions(
-        encryptedSharedPreferences: true,
+        // Values written by flutter_secure_storage 9.x (EncryptedSharedPreferences)
+        // are migrated to the v10 cipher scheme on first access via the
+        // migrateOnAlgorithmChange default. resetOnError defaults to true in
+        // v10, which wipes the whole store on a decrypt failure; keep it false
+        // so errors surface as failed reads (this cache returns null) instead
+        // of destroying data whose purpose is to survive app reinstalls.
+        resetOnError: false,
       );
       const iOptions = IOSOptions(
         accessibility: KeychainAccessibility.unlocked,
