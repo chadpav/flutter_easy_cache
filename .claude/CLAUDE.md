@@ -58,12 +58,16 @@ The cache enforces type safety and only supports:
 Type checking happens in `_assertTypeSupport<T>()` which throws `ArgumentError` for unsupported types.
 
 ### Storage Implementation Details
-- **appSession**: Direct dictionary storage in `_inMemoryCache` map
+- All shared preferences and secure storage keys carry the `easyCache.` prefix (`_keyPrefix`), so `purge()` deletes only cache-owned keys
+- **appSession**: Stored in the `_inMemoryCache` map; values are deep-copied on write and read so the cache never shares mutable state with callers
 - **appInstall**: Uses `SharedPreferencesWithCache` API, JSON encoding for complex types
-- **secure**: Uses `FlutterSecureStorage` API, all values stored as strings (primitives converted via `toString()`)
+- **secure**: Uses `FlutterSecureStorage` API; every value is a JSON envelope (`__easy_cache_type__` + `__easy_cache_value__`) so reads can enforce type safety
+
+### Legacy Data Migration (pre-0.1.0)
+Versions before 0.1.0 stored values under unprefixed keys, and secure values as untyped strings. Read paths fall back to the legacy key, parse leniently (old behavior), and migrate to the new format on first successful read. `remove()` deletes both prefixed and legacy keys. `purge()` does not cover unmigrated legacy values.
 
 ### Web Support
-For web platform, the code sets `SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty()` in `_initIfNeeded()` (line 290).
+For web platform, `_initIfNeeded()` sets `SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty()` once, before first initialization.
 
 ## Testing Patterns
 
