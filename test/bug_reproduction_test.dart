@@ -14,9 +14,10 @@ void main() {
   setUp(() async {
     FlutterEasyCache.setMockInitialValues();
     secureStorage ??= const FlutterSecureStorage();
-    sharedPreferences ??=
-        await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: true);
+    sharedPreferences ??= await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions());
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!,
+        enableLogging: true);
   });
 
   tearDown(() async {
@@ -25,9 +26,12 @@ void main() {
 
   group('Bug Reproduction Tests', () {
     // Bug #2: int.parse() should use tryParse() to avoid throwing
-    test('BUG #2: Reading non-existent int from secure storage should not throw FormatException', () async {
+    test(
+        'BUG #2: Reading non-existent int from secure storage should not throw FormatException',
+        () async {
       // First, add and then remove an int to ensure secure storage is initialized
-      await cache.addOrUpdate(key: 'tempInt', value: 42, policy: CachePolicy.secure);
+      await cache.addOrUpdate(
+          key: 'tempInt', value: 42, policy: CachePolicy.secure);
       await cache.remove(key: 'tempInt');
 
       // Now try to read a key that was never set
@@ -44,14 +48,19 @@ void main() {
         // Exception caught: $e
       }
 
-      expect(didThrow, false, reason: 'Should use int.tryParse() instead of int.parse() to avoid throwing');
+      expect(didThrow, false,
+          reason:
+              'Should use int.tryParse() instead of int.parse() to avoid throwing');
       expect(retrievedValue, null);
     });
 
     // Bug #3: Null pointer when reading non-existent List<Map>
-    test('BUG #3: Reading non-existent List<Map> from preferences should not throw', () async {
+    test(
+        'BUG #3: Reading non-existent List<Map> from preferences should not throw',
+        () async {
       // Initialize preferences
-      await cache.addOrUpdate(key: 'dummy', value: 'value', policy: CachePolicy.appInstall);
+      await cache.addOrUpdate(
+          key: 'dummy', value: 'value', policy: CachePolicy.appInstall);
 
       // Try to read a List<Map> that doesn't exist
       // Line 198: final stringList = _preferences?.getStringList(key) as List<String>;
@@ -61,7 +70,8 @@ void main() {
       bool didThrow = false;
 
       try {
-        retrievedValue = await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'neverSetListMapKey');
+        retrievedValue = await cache.getValueOrNull<List<Map<String, dynamic>>>(
+            key: 'neverSetListMapKey');
       } catch (e) {
         didThrow = true;
         // Exception caught: $e
@@ -72,7 +82,9 @@ void main() {
     });
 
     // Bug #1: Missing await in addOrUpdate switch statement
-    test('BUG #1: addOrUpdate should await async operations in switch statement', () async {
+    test(
+        'BUG #1: addOrUpdate should await async operations in switch statement',
+        () async {
       // This test tries to verify that the Future completes only after write finishes
       // In practice, this bug might not be caught by tests due to fast execution
       // But it violates the async contract
@@ -82,7 +94,10 @@ void main() {
       // Create a list to track execution order
       final executionOrder = <String>[];
 
-      cache.addOrUpdate(key: 'testKey', value: value, policy: CachePolicy.appInstall).then((_) {
+      cache
+          .addOrUpdate(
+              key: 'testKey', value: value, policy: CachePolicy.appInstall)
+          .then((_) {
         executionOrder.add('addOrUpdate completed');
       });
 

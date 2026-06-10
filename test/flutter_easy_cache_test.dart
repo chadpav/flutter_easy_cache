@@ -17,11 +17,12 @@ void main() {
   setUp(() async {
     FlutterEasyCache.setMockInitialValues();
     secureStorage ??= const FlutterSecureStorage();
-    sharedPreferences ??=
-        await SharedPreferencesWithCache.create(cacheOptions: const SharedPreferencesWithCacheOptions());
+    sharedPreferences ??= await SharedPreferencesWithCache.create(
+        cacheOptions: const SharedPreferencesWithCacheOptions());
 
     // sut
-    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!, enableLogging: false);
+    cache = FlutterEasyCache.create(sharedPreferences!, secureStorage!,
+        enableLogging: false);
   });
 
   tearDown(() async {
@@ -30,13 +31,15 @@ void main() {
 
   group('General tests that apply regardless of cache policy', () {
     test('Get a key that does not exist returns null value', () async {
-      final retrievedValue = await cache.getValueOrNull<bool>(key: 'aKeyThatDontExist');
+      final retrievedValue =
+          await cache.getValueOrNull<bool>(key: 'aKeyThatDontExist');
       expect(retrievedValue, null);
     });
 
     test('Get a default value if the key does not exist', () async {
       // sut
-      final retrievedValue = await cache.getValueOrDefault<bool>(key: 'aKeyThatDontExist', defaultIfNull: false);
+      final retrievedValue = await cache.getValueOrDefault<bool>(
+          key: 'aKeyThatDontExist', defaultIfNull: false);
 
       expect(retrievedValue, false);
     });
@@ -46,7 +49,8 @@ void main() {
 
       // create one cache and store a value
       final cacheOne = FlutterEasyCache.shared;
-      await cacheOne.addOrUpdate<bool>(key: 'keyOne', value: true, policy: CachePolicy.appSession);
+      await cacheOne.addOrUpdate<bool>(
+          key: 'keyOne', value: true, policy: CachePolicy.appSession);
 
       // create another cache and retrieve the value
       final cacheTwo = FlutterEasyCache.shared;
@@ -57,7 +61,8 @@ void main() {
       expect(retrievedValue, true);
     });
 
-    test('Not providing a Type for T throws an error when adding values', () async {
+    test('Not providing a Type for T throws an error when adding values',
+        () async {
       dynamic value = true;
 
       expect(
@@ -86,12 +91,20 @@ void main() {
       );
     });
 
-    test('Providing a Type for a value that will not cast returns null (not throw)', () async {
-      Map<String, dynamic> value = {'key1': 'value1', 'key2': 2, 'key3': true, 'key4': 3.14};
+    test(
+        'Providing a Type for a value that will not cast returns null (not throw)',
+        () async {
+      Map<String, dynamic> value = {
+        'key1': 'value1',
+        'key2': 2,
+        'key3': true,
+        'key4': 3.14
+      };
 
       // save and retrieve the value
       await cache.addOrUpdate(key: 'aKey', value: value);
-      final correctValue = await cache.getValueOrNull<Map<String, dynamic>>(key: 'aKey');
+      final correctValue =
+          await cache.getValueOrNull<Map<String, dynamic>>(key: 'aKey');
 
       // values should match if I gave it the right types
       expect(value, correctValue);
@@ -101,7 +114,8 @@ void main() {
       expect(nullValue, null);
     });
 
-    test('Providing a typed value correctly infers type when adding values', () async {
+    test('Providing a typed value correctly infers type when adding values',
+        () async {
       bool value = true;
 
       // write
@@ -112,7 +126,8 @@ void main() {
       expect(retrievedValue, value);
     });
 
-    test('Not providing a Type for T throws an error when getting values', () async {
+    test('Not providing a Type for T throws an error when getting values',
+        () async {
       expect(
         () async => await cache.getValueOrNull(key: 'aKey'),
         throwsA(isA<ArgumentError>()),
@@ -122,7 +137,8 @@ void main() {
     test('Getting a value with default if null', () async {
       const defaultValue = false;
 
-      final retrievedValue = await cache.getValueOrDefault<bool>(key: 'aKeyThatDontExist', defaultIfNull: defaultValue);
+      final retrievedValue = await cache.getValueOrDefault<bool>(
+          key: 'aKeyThatDontExist', defaultIfNull: defaultValue);
 
       expect(retrievedValue, defaultValue);
     });
@@ -141,23 +157,30 @@ void main() {
     test('Purging only the in-memory cache', () async {
       const value = true;
 
-      await cache.addOrUpdate(key: 'aSessionKey', value: value, policy: CachePolicy.appSession);
-      await cache.addOrUpdate(key: 'appInstallKey', value: value, policy: CachePolicy.appInstall);
-      await cache.addOrUpdate(key: 'secureKey', value: value, policy: CachePolicy.secure);
+      await cache.addOrUpdate(
+          key: 'aSessionKey', value: value, policy: CachePolicy.appSession);
+      await cache.addOrUpdate(
+          key: 'appInstallKey', value: value, policy: CachePolicy.appInstall);
+      await cache.addOrUpdate(
+          key: 'secureKey', value: value, policy: CachePolicy.secure);
 
       await cache.purge(includeAppInstall: false, includeSecureStorage: false);
 
-      final retrievedValue = await cache.getValueOrNull<bool>(key: 'aSessionKey');
+      final retrievedValue =
+          await cache.getValueOrNull<bool>(key: 'aSessionKey');
       expect(retrievedValue, null);
 
-      final retrievedAppInstallValue = await cache.getValueOrNull<bool>(key: 'appInstallKey');
+      final retrievedAppInstallValue =
+          await cache.getValueOrNull<bool>(key: 'appInstallKey');
       expect(retrievedAppInstallValue, value);
 
-      final retrievedSecureValue = await cache.getValueOrNull<bool>(key: 'secureKey');
+      final retrievedSecureValue =
+          await cache.getValueOrNull<bool>(key: 'secureKey');
       expect(retrievedSecureValue, value);
     });
 
-    test('Providing a Type for T that doesnt match actual type will throw', () async {
+    test('Providing a Type for T that doesnt match actual type will throw',
+        () async {
       dynamic value = true;
 
       // by key
@@ -167,36 +190,45 @@ void main() {
       );
     });
 
-    test('Providing an unsupported Type for T will throw a TypeError', () async {
+    test('Providing an unsupported Type for T will throw a TypeError',
+        () async {
       dynamic value = true;
 
       // by key
       expect(
-        () async => await cache.addOrUpdate<List<int>>(key: 'aKey', value: value),
+        () async =>
+            await cache.addOrUpdate<List<int>>(key: 'aKey', value: value),
         throwsA(isA<TypeError>()),
       );
     });
 
     // TDD: Test for Bug #1 - Missing await in addOrUpdate()
-    test('addOrUpdate completes only after value is written to storage', () async {
+    test('addOrUpdate completes only after value is written to storage',
+        () async {
       const value = 'test-value';
 
       // Write to appInstall (requires async disk write)
-      await cache.addOrUpdate(key: 'testKey', value: value, policy: CachePolicy.appInstall);
+      await cache.addOrUpdate(
+          key: 'testKey', value: value, policy: CachePolicy.appInstall);
 
       // If await is missing in the switch statement, this might read before write completes
       final retrievedValue = await cache.getValueOrNull<String>(key: 'testKey');
 
-      expect(retrievedValue, value, reason: 'Value should be available immediately after addOrUpdate completes');
+      expect(retrievedValue, value,
+          reason:
+              'Value should be available immediately after addOrUpdate completes');
     });
 
     // TDD: Test for Bug #2 - int.parse() throws instead of returning null
-    test('Reading non-existent int from secure storage returns null (not throw)', () async {
+    test(
+        'Reading non-existent int from secure storage returns null (not throw)',
+        () async {
       // This should NOT throw - should return null gracefully
       expect(
         () async => await cache.getValueOrNull<int>(key: 'nonExistentIntKey'),
         returnsNormally,
-        reason: 'Should not throw when reading non-existent int from secure storage',
+        reason:
+            'Should not throw when reading non-existent int from secure storage',
       );
 
       final value = await cache.getValueOrNull<int>(key: 'nonExistentIntKey');
@@ -204,18 +236,24 @@ void main() {
     });
 
     // TDD: Test for Bug #3 - Null pointer in List<Map> deserialization
-    test('Reading non-existent List<Map> from preferences returns null (not throw)', () async {
+    test(
+        'Reading non-existent List<Map> from preferences returns null (not throw)',
+        () async {
       // First write to appInstall to ensure preferences is initialized
-      await cache.addOrUpdate(key: 'dummyKey', value: 'dummy', policy: CachePolicy.appInstall);
+      await cache.addOrUpdate(
+          key: 'dummyKey', value: 'dummy', policy: CachePolicy.appInstall);
 
       // This should NOT throw - should return null gracefully
       expect(
-        () async => await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'nonExistentListMapKey'),
+        () async => await cache.getValueOrNull<List<Map<String, dynamic>>>(
+            key: 'nonExistentListMapKey'),
         returnsNormally,
-        reason: 'Should not throw when reading non-existent List<Map> from preferences',
+        reason:
+            'Should not throw when reading non-existent List<Map> from preferences',
       );
 
-      final value = await cache.getValueOrNull<List<Map<String, dynamic>>>(key: 'nonExistentListMapKey');
+      final value = await cache.getValueOrNull<List<Map<String, dynamic>>>(
+          key: 'nonExistentListMapKey');
       expect(value, null);
     });
   });
